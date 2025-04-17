@@ -17,3 +17,4 @@ function start() { //function ran by start button
   const output = document.getElementById('textelem');
   output.textContent = conjecture(userinput); //set text on webpage to the string previously appended to
 }
+
