@@ -1,0 +1,62 @@
+/* General page styling */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 40px;
+  padding: 0 20px;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* Input and button styling */
+input, button {
+  font-size: 1.2rem;
+  padding: 12px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
+
+/* Output display styling */
+pre#textelem {
+  font-size: 1.2rem;
+  background-color: #fff;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  box-sizing: border-box;
+}
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  body {
+    margin: 20px;
+    padding: 10px;
+  }
+
+  input, button {
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
+
+  pre#textelem {
+    font-size: 1rem;
+    padding: 16px;
+  }
+}
