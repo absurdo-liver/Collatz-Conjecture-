@@ -3,72 +3,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/x-icon" href="\favicon.ico">
   <title>Collatz Conjecture</title>
   
   <!-- Inline CSS for styling the page -->
   <style>
-    /* General page styling */
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 40px;
-      padding: 0 20px;
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      color: #333;
-      box-sizing: border-box;
-    }
+/* General page styling */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 40px;
+  padding: 0 20px;
+  font-family: Arial, sans-serif;
+  color: #333;
+  box-sizing: border-box;
+  background-color: aquamarine;
+}
 
-    /* Input and button styling */
-    input, button {
-      font-size: 1.2rem;
-      padding: 12px 20px;
-      margin: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      width: 100%;
-      max-width: 400px;
-      box-sizing: border-box;
-    }
+/* Input and button styling */
+input, button {
+  font-size: 1.2rem;
+  padding: 12px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  border: 1px solid #000000;
+  background-color: #ffffff;
+  color: #000000;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
 
-    /* Output display styling */
-    pre#textelem {
-      font-size: 1.2rem;
-      background-color: #fff;
-      padding: 20px;
-      margin-top: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 600px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      text-align: left;
-      box-sizing: border-box;
-    }
+/* Output display styling */
+pre#textelem {
+  font-size: 1.2rem;
+  background-color: #ffffff;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  box-sizing: border-box;
+}
 
-    /* Mobile tweaks */
-    @media (max-width: 600px) {
-      body {
-        margin: 20px;
-        padding: 10px;
-      }
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  body {
+    margin: 20px;
+    padding: 10px;
+  }
 
-      input, button {
-        font-size: 1rem;
-        padding: 10px 16px;
-      }
+  input, button {
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
 
-      pre#textelem {
-        font-size: 1rem;
-        padding: 16px;
-      }
-    }
+  pre#textelem {
+    font-size: 1rem;
+    padding: 16px;
+  }
+}
   </style>
 </head>
 
@@ -84,25 +87,35 @@
 
   <!-- Inline JavaScript to handle the Collatz logic -->
   <script>
-    function conjecture(n) { // all dat math shii
-      let result = n + '\n'; // Start with the initial number
-      while (n !== 1) {
-        if (n % 2 === 0) {
-          n /= 2;
-        } else {
-          n = n * 3 + 1;
-        }
-        result += n + '\n'; // Append each number
-      }
-      result += 'conjecture finished!';
-      return result; // return results
+function conjecture(n) { //all dat math shii
+  let result = n + '\n'; // Start with the initial number
+  let counter = 0; // Initialize a counter
+  while (n !== 1) {
+    if (n % 2 === 0) {
+      n /= 2;
+    } else {
+      n = n * 3 + 1;
     }
+    result += n + '\n'; // Append each number
+    counter += 1; // Increment the counter
+  }
+  result += 'conjecture finished!';
+  result += '\nTotal steps: ' + counter; // Append the total steps
+  return result; //return results
+}
 
-    function start() { // function ran by start button
-      const userinput = parseInt(document.getElementById('userin').value); // parse user input
-      const output = document.getElementById('textelem');
-      output.textContent = conjecture(userinput); // set text on webpage to the string previously appended to
-    }
+
+function start() {
+  const userinput = parseInt(document.getElementById('userin').value);
+  const output = document.getElementById('textelem');
+
+  if (isNaN(userinput) || userinput < 1) {
+    output.textContent = 'Please enter a valid positive number!';
+    return;
+  }
+
+  output.textContent = conjecture(userinput);
+}
   </script>
 </body>
 </html>
