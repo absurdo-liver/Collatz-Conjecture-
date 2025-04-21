@@ -1,5 +1,6 @@
 function conjecture(n) { //all dat math shii
   let result = n + '\n'; // Start with the initial number
+  let counter = 0; // Initialize a counter
   while (n !== 1) {
     if (n % 2 === 0) {
       n /= 2;
@@ -7,14 +8,22 @@ function conjecture(n) { //all dat math shii
       n = n * 3 + 1;
     }
     result += n + '\n'; // Append each number
+    counter += 1; // Increment the counter
   }
   result += 'conjecture finished!';
+  result += '\nTotal steps: ' + counter; // Append the total steps
   return result; //return results
 }
 
-function start() { //function ran by start button
-  const userinput = parseInt(document.getElementById('userin').value); //parse user input
-  const output = document.getElementById('textelem');
-  output.textContent = conjecture(userinput); //set text on webpage to the string previously appended to
-}
 
+function start() {
+  const userinput = parseInt(document.getElementById('userin').value);
+  const output = document.getElementById('textelem');
+
+  if (isNaN(userinput) || userinput < 1) {
+    output.textContent = 'Please enter a valid positive number!';
+    return;
+  }
+
+  output.textContent = conjecture(userinput);
+}
