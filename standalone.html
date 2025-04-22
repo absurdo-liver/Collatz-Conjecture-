@@ -1,12 +1,15 @@
-<!--standalone file that includes all the webpage, styling and logic code-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Collatz Conjecture</title>
   <meta charset="UTF-8">
+  <title>Collatz Conjecture</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <style>
-    /* General page styling */
+    /* General styling */
     body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -14,33 +17,28 @@
       min-height: 100vh;
       margin: 40px;
       padding: 0 20px;
-      font-family: Arial, sans-serif;
-      color: #ffffff;
       box-sizing: border-box;
-      background-color: #000000;
     }
 
-    /* Input and button styling */
     input, button {
       font-size: 1.2rem;
       padding: 12px 20px;
       margin: 10px;
       border-radius: 5px;
       border: 1px solid #ffffff;
-      background-color: #222222;
-      color: #ffffff;
+      background-color: #222;
+      color: #fff;
       width: 100%;
       max-width: 400px;
       box-sizing: border-box;
     }
 
-    /* Output display styling */
-    pre#textelem {
+    pre#textelem, pre#highsteps-list, pre#highnum-list {
       font-size: 1.2rem;
-      background-color: #111111;
+      background-color: #111;
       padding: 20px;
       margin-top: 20px;
-      border: 1px solid #ffffff;
+      border: 1px solid #444;
       border-radius: 8px;
       width: 100%;
       max-width: 600px;
@@ -50,22 +48,33 @@
       box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
       text-align: left;
       box-sizing: border-box;
-      color: #00ffcc;
     }
 
-    /* Mobile tweaks */
-    @media (max-width: 600px) {
-      body {
-        margin: 20px;
-        padding: 10px;
-      }
+    h2, h3 {
+      margin: 10px 0 5px;
+    }
 
+    #leaderboard {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .leaderboard-columns {
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
       input, button {
         font-size: 1rem;
         padding: 10px 16px;
       }
 
-      pre#textelem {
+      pre {
         font-size: 1rem;
         padding: 16px;
       }
@@ -73,12 +82,27 @@
   </style>
 </head>
 <body>
-  <!--input field-->
+  <!-- Input field -->
   <input type="text" id="userin" placeholder="Enter a number" />
-  <!--start button-->
+  <!-- Start button -->
   <button onclick="start()">Start</button>
-  <!--output field-->
+  <!-- Output field -->
   <pre id="textelem"></pre>
+
+  <!-- Leaderboard -->
+  <div id="leaderboard">
+    <h2>Leaderboard</h2>
+    <div class="leaderboard-columns">
+      <div>
+        <h3>Most Steps</h3>
+        <pre id="highsteps-list"></pre>
+      </div>
+      <div>
+        <h3>Highest Number</h3>
+        <pre id="highnum-list"></pre>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Convert words like "seventy four" or "one hundred twenty" to numbers
@@ -100,75 +124,99 @@
         sixty: 60, seventy: 70, eighty: 80, ninety: 90
       };
 
-      const scales = {
-        hundred: 100,
-        thousand: 1000
-      };
-
       text = text.toLowerCase().replace(/-/g, ' ').trim(); // Normalize input
-      const words = text.split(/\s+/); // Split into individual words
+      const words = text.split(/\s+/);
 
       let current = 0;
       let total = 0;
 
       for (let word of words) {
-        if (word === "and") {
-          continue; // Ignore "and"
-        } else if (ones[word] !== undefined) {
-          current += ones[word];
-        } else if (teens[word] !== undefined) {
-          current += teens[word];
-        } else if (tens[word] !== undefined) {
-          current += tens[word];
-        } else if (word === "hundred") {
-          current *= 100;
-        } else if (word === "thousand") {
+        if (word === "and") continue;
+        else if (ones[word] !== undefined) current += ones[word];
+        else if (teens[word] !== undefined) current += teens[word];
+        else if (tens[word] !== undefined) current += tens[word];
+        else if (word === "hundred") current *= 100;
+        else if (word === "thousand") {
           current *= 1000;
           total += current;
           current = 0;
         } else {
-          return NaN; // Unknown word
+          return NaN;
         }
       }
 
       return total + current;
     }
 
-    //all dat math shii
-    function conjecture(n) { 
-      let result = n + '\n'; // Start with the initial number
-      let counter = 0; // Initialize a counter
-      while (n !== 1) { // Loop until n becomes 1
-        if (n % 2 === 0) { // Check if n is even or odd
+    // Leaderboard setup
+    let highestStepsList = JSON.parse(localStorage.getItem('highSteps')) || [];
+    let highestNumberList = JSON.parse(localStorage.getItem('highNumbers')) || [];
+
+    function saveLeaderboardToStorage() {
+      localStorage.setItem('highSteps', JSON.stringify(highestStepsList));
+      localStorage.setItem('highNumbers', JSON.stringify(highestNumberList));
+    }
+
+    function updateLeaderboardDisplay() {
+      const stepsEl = document.getElementById('highsteps-list');
+      const numbersEl = document.getElementById('highnum-list');
+
+      stepsEl.textContent = highestStepsList.map((s, i) => `${i + 1}. ${s}`).join('\n');
+      numbersEl.textContent = highestNumberList.map((n, i) => `${i + 1}. ${n}`).join('\n');
+    }
+
+    // Conjecture logic
+    function conjecture(n) {
+      let result = n + '\n';
+      let counter = 0;
+      let maxInSequence = n;
+
+      while (n !== 1) {
+        if (n % 2 === 0) {
           n /= 2;
         } else {
           n = n * 3 + 1;
         }
-        result += n + '\n'; // Append each number
-        counter += 1; // Increment the counter
+        result += n + '\n';
+        counter += 1;
+        if (n > maxInSequence) maxInSequence = n;
       }
+
+      // Update leaderboard
+      highestStepsList.push(counter);
+      highestNumberList.push(maxInSequence);
+
+      highestStepsList = [...new Set(highestStepsList)].sort((a, b) => b - a).slice(0, 5);
+      highestNumberList = [...new Set(highestNumberList)].sort((a, b) => b - a).slice(0, 5);
+
+      saveLeaderboardToStorage();
+      updateLeaderboardDisplay();
+
       result += 'conjecture finished!';
-      result += '\nTotal steps: ' + counter; // Append the total steps
-      return result; //return results
+      result += '\nTotal steps: ' + counter;
+      return result;
     }
 
-    //function ran by start button
-    function start() { 
-      const rawInput = document.getElementById('userin').value; // Get raw user input
-      let userinput = parseInt(rawInput); // Try to parse as number first
+    // Start function
+    function start() {
+      const rawInput = document.getElementById('userin').value;
+      let userinput = parseInt(rawInput);
 
       if (isNaN(userinput)) {
-        userinput = wordsToNumber(rawInput); // Try to parse spelled-out numbers
+        userinput = wordsToNumber(rawInput);
       }
 
-      const output = document.getElementById('textelem'); // Get the output element
-      if (isNaN(userinput) || userinput < 1) { // Check if the input is a valid positive number
-        output.textContent = 'Please enter a valid positive number!'; // Display an error message
+      const output = document.getElementById('textelem');
+      if (isNaN(userinput) || userinput < 1) {
+        output.textContent = 'Please enter a valid positive number!';
         return;
       }
 
-      output.textContent = conjecture(userinput); // Call the conjecture function and display the result
+      output.textContent = conjecture(userinput);
     }
+
+    // Initialize leaderboard on load
+    updateLeaderboardDisplay();
   </script>
 </body>
 </html>
