@@ -1,19 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Collatz Conjecture</title>
   <meta charset="UTF-8">
+  <title>Collatz Conjecture</title>
   <link rel="icon" type="image/x-icon" href="\favicon.ico">
-<!--link javascript file and stylesheet-->
-<script src='code.js'></script>
-<link rel='stylesheet' href='styles.css'>
+  <link rel="stylesheet" href="styles.css">
+  <script src="code.js" defer></script>
 </head>
 <body>
-<!--input field-->
-<input type="text" id="userin" placeholder="Enter a number" />
-<!--start button-->
-<button onclick="start()">Start</button>
-<!--output field-->
-<pre id="textelem"></pre>
+  <!-- Input -->
+  <input type="text" id="userin" placeholder="Enter a number" />
+  <button onclick="start()">Start</button>
+
+  <!-- Output -->
+  <pre id="textelem"></pre>
+
+  <!-- Leaderboard -->
+  <h2>Leaderboard</h2>
+  <table id="leaderboard">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Start Number</th>
+        <th>Max Number</th>
+        <th>Total Steps</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-body"></tbody>
+  </table>
 </body>
 </html>
