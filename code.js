@@ -17,74 +17,113 @@ function wordsToNumber(text) {
     sixty: 60, seventy: 70, eighty: 80, ninety: 90
   };
 
-  const scales = {
-    hundred: 100,
-    thousand: 1000
-  };
-
-  text = text.toLowerCase().replace(/-/g, ' ').trim(); // Normalize input
-  const words = text.split(/\s+/); // Split into individual words
+  text = text.toLowerCase().replace(/-/g, ' ').trim();
+  const words = text.split(/\s+/);
 
   let current = 0;
   let total = 0;
 
   for (let word of words) {
-    if (word === "and") {
-      continue; // Ignore "and"
-    } else if (ones[word] !== undefined) {
-      current += ones[word];
-    } else if (teens[word] !== undefined) {
-      current += teens[word];
-    } else if (tens[word] !== undefined) {
-      current += tens[word];
-    } else if (word === "hundred") {
-      current *= 100;
-    } else if (word === "thousand") {
+    if (word === "and") continue;
+    else if (ones[word] !== undefined) current += ones[word];
+    else if (teens[word] !== undefined) current += teens[word];
+    else if (tens[word] !== undefined) current += tens[word];
+    else if (word === "hundred") current *= 100;
+    else if (word === "thousand") {
       current *= 1000;
       total += current;
       current = 0;
     } else {
-      return NaN; // Unknown word
+      return NaN;
     }
   }
 
   return total + current;
 }
 
+// Leaderboard setup
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
-//all dat math shii
-function conjecture(n) { 
-  let result = n + '\n'; // Start with the initial number
-  let counter = 0; // Initialize a counter
-  while (n !== 1) { // Loop until n becomes 1
-    if (n % 2 === 0) { // Check if n is even or odd
+function saveLeaderboardToStorage() {
+  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
+
+function updateLeaderboardDisplay() {
+  const tableBody = document.getElementById('leaderboard-body');
+  tableBody.innerHTML = '';
+
+  leaderboard.slice(0, 5).forEach((entry, index) => {
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${entry.start}</td>
+      <td>${entry.max}</td>
+      <td>${entry.steps}</td>
+    `;
+
+    tableBody.appendChild(row);
+  });
+}
+
+// Conjecture logic
+function conjecture(n) {
+  let result = n + '\n';
+  let counter = 0;
+  let maxInSequence = n;
+  let original = n;
+
+  while (n !== 1) {
+    if (n % 2 === 0) {
       n /= 2;
     } else {
       n = n * 3 + 1;
     }
-    result += n + '\n'; // Append each number
-    counter += 1; // Increment the counter
+    result += n + '\n';
+    counter += 1;
+    if (n > maxInSequence) maxInSequence = n;
   }
+
+  leaderboard.push({ start: original, max: maxInSequence, steps: counter });
+
+  // Sort by steps first, then by highest number
+  leaderboard.sort((a, b) => {
+    if (b.steps === a.steps) {
+      return b.max - a.max;
+    }
+    return b.steps - a.steps;
+  });
+
+  // Remove duplicates based on starting number
+  leaderboard = leaderboard.filter((entry, index, self) =>
+    index === self.findIndex(e => e.start === entry.start)
+  ).slice(0, 5);
+
+  saveLeaderboardToStorage();
+  updateLeaderboardDisplay();
+
   result += 'conjecture finished!';
-  result += '\nTotal steps: ' + counter; // Append the total steps
-  return result; //return results
+  result += '\nTotal steps: ' + counter;
+  return result;
 }
 
-
-//function ran by start button
-function start() { 
-  const rawInput = document.getElementById('userin').value; // Get raw user input
-  let userinput = parseInt(rawInput); // Try to parse as number first
+// Start function
+function start() {
+  const rawInput = document.getElementById('userin').value;
+  let userinput = parseInt(rawInput);
 
   if (isNaN(userinput)) {
-    userinput = wordsToNumber(rawInput); // Try to parse spelled-out numbers
+    userinput = wordsToNumber(rawInput);
   }
 
-  const output = document.getElementById('textelem'); // Get the output element
-  if (isNaN(userinput) || userinput < 1) { // Check if the input is a valid positive number
-    output.textContent = 'Please enter a valid positive number!'; // Display an error message
+  const output = document.getElementById('textelem');
+  if (isNaN(userinput) || userinput < 1) {
+    output.textContent = 'Please enter a valid positive number!';
     return;
   }
 
-  output.textContent = conjecture(userinput); // Call the conjecture function and display the result
+  output.textContent = conjecture(userinput);
 }
+
+// Initialize leaderboard on load
+updateLeaderboardDisplay();
