@@ -17,6 +17,12 @@ function wordsToNumber(text) {
     sixty: 60, seventy: 70, eighty: 80, ninety: 90
   };
 
+  const scales = {
+    hundred: 100,
+    thousand: 1000,
+    million: 1000000
+  };
+
   text = text.toLowerCase().replace(/-/g, ' ').trim();
   const words = text.split(/\s+/);
 
@@ -28,18 +34,20 @@ function wordsToNumber(text) {
     else if (ones[word] !== undefined) current += ones[word];
     else if (teens[word] !== undefined) current += teens[word];
     else if (tens[word] !== undefined) current += tens[word];
-    else if (word === "hundred") current *= 100;
-    else if (word === "thousand") {
-      current *= 1000;
+    else if (word === "hundred") {
+      current *= 100;
+    } else if (word === "thousand" || word === "million") {
+      current *= scales[word];
       total += current;
       current = 0;
     } else {
-      return NaN;
+      return NaN; // Unknown word
     }
   }
 
   return total + current;
 }
+
 
 // Leaderboard setup
 let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
@@ -107,16 +115,25 @@ function conjecture(n) {
   return result;
 }
 
-// Start function
+//start function
 function start() {
-  const rawInput = document.getElementById('userin').value;
+  const rawInput = document.getElementById('userin').value.trim().toLowerCase();
   let userinput = parseInt(rawInput);
 
-  if (isNaN(userinput)) {
+  const output = document.getElementById('textelem');
+
+  // If input is numeric and contains words like "thousand" or "million"
+  if (!isNaN(userinput)) {
+    if (rawInput.includes("thousand")) {
+      userinput *= 1000;
+    } else if (rawInput.includes("million")) {
+      userinput *= 1000000;
+    }
+  } else {
+    // Try to convert full word string
     userinput = wordsToNumber(rawInput);
   }
 
-  const output = document.getElementById('textelem');
   if (isNaN(userinput) || userinput < 1) {
     output.textContent = 'Please enter a valid positive number!';
     return;
@@ -124,6 +141,7 @@ function start() {
 
   output.textContent = conjecture(userinput);
 }
+
 
 // Initialize leaderboard on load
 updateLeaderboardDisplay();
