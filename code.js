@@ -128,6 +128,8 @@ function start() {
       userinput *= 1000;
     } else if (rawInput.includes("million")) {
       userinput *= 1000000;
+    } else if (rawInput.includes("hundred")){
+      userinput *= 100;
     }
   } else {
     // Try to convert full word string
