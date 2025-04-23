@@ -18,14 +18,24 @@ function wordsToNumber(text) {
   };
 
   const scales = {
-    hundred: 100,
     thousand: 1000,
-    million: 1000000
+    million: 1000000,
+    billion: 1000000000
   };
 
-  text = text.toLowerCase().replace(/-/g, ' ').trim();
-  const words = text.split(/\s+/);
+  text = text.toLowerCase().replace(/-/g, ' ').replace(/ +/g, ' ').trim();
 
+  // Handle numeric + scale combo like "1.2 million"
+  const numScaleMatch = text.match(/^([\d.]+)\s+(thousand|million|billion)$/);
+  if (numScaleMatch) {
+    const num = parseFloat(numScaleMatch[1]);
+    const scale = scales[numScaleMatch[2]];
+    const scaled = num * scale;
+    return Number.isInteger(scaled) ? scaled : NaN;
+  }
+
+  // Handle spelled out words like "two hundred fifty thousand"
+  const words = text.split(/\s+/);
   let current = 0;
   let total = 0;
 
@@ -34,20 +44,18 @@ function wordsToNumber(text) {
     else if (ones[word] !== undefined) current += ones[word];
     else if (teens[word] !== undefined) current += teens[word];
     else if (tens[word] !== undefined) current += tens[word];
-    else if (word === "hundred") {
-      current *= 100;
-    } else if (word === "thousand" || word === "million") {
+    else if (word === "hundred") current *= 100;
+    else if (scales[word]) {
       current *= scales[word];
       total += current;
       current = 0;
     } else {
-      return NaN; // Unknown word
+      return NaN;
     }
   }
 
   return total + current;
 }
-
 
 // Leaderboard setup
 let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
@@ -115,27 +123,16 @@ function conjecture(n) {
   return result;
 }
 
-//start function
+// Start function
 function start() {
-  const rawInput = document.getElementById('userin').value.trim().toLowerCase();
+  const rawInput = document.getElementById('userin').value;
   let userinput = parseInt(rawInput);
 
-  const output = document.getElementById('textelem');
-
-  // If input is numeric and contains words like "thousand" or "million"
-  if (!isNaN(userinput)) {
-    if (rawInput.includes("thousand")) {
-      userinput *= 1000;
-    } else if (rawInput.includes("million")) {
-      userinput *= 1000000;
-    } else if (rawInput.includes("hundred")){
-      userinput *= 100;
-    }
-  } else {
-    // Try to convert full word string
+  if (isNaN(userinput)) {
     userinput = wordsToNumber(rawInput);
   }
 
+  const output = document.getElementById('textelem');
   if (isNaN(userinput) || userinput < 1) {
     output.textContent = 'Please enter a valid positive number!';
     return;
@@ -167,7 +164,6 @@ function resetLeaderboard() {
     resetPending = false;
   }
 }
-
 
 // Initialize leaderboard on load
 updateLeaderboardDisplay();
