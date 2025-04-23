@@ -3,21 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>Collatz Conjecture</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <style>
-    /* General styling */
     body {
-      background-color: black;
-      color: white;
+      background-color: #222831;
+      color: #ffffff;
       font-family: Arial, sans-serif;
+      padding: 40px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 40px;
-      padding: 0 20px;
-      box-sizing: border-box;
     }
 
     input, button {
@@ -25,87 +19,66 @@
       padding: 12px 20px;
       margin: 10px;
       border-radius: 5px;
-      border: 1px solid #ffffff;
-      background-color: #222;
-      color: #fff;
-      width: 100%;
+      border: 1px solid #000000;
+      background-color: #ffffff;
+      color: #000000;
       max-width: 400px;
+      width: 100%;
       box-sizing: border-box;
     }
 
-    pre#textelem, pre#highsteps-list, pre#highnum-list {
-      font-size: 1.2rem;
-      background-color: #111;
+    pre#textelem {
+      background-color: #ffffff;
+      color: #000000;
       padding: 20px;
       margin-top: 20px;
-      border: 1px solid #444;
       border-radius: 8px;
       width: 100%;
       max-width: 600px;
-      overflow-x: auto;
       white-space: pre-wrap;
-      word-wrap: break-word;
-      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
-      text-align: left;
-      box-sizing: border-box;
+      overflow-x: auto;
     }
 
-    h2, h3 {
-      margin: 10px 0 5px;
-    }
-
-    #leaderboard {
+    table {
       margin-top: 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 600px;
     }
 
-    .leaderboard-columns {
-      display: flex;
-      gap: 30px;
-      justify-content: center;
-      flex-wrap: wrap;
+    th, td {
+      border: 1px solid #ffffff;
+      padding: 12px;
+      text-align: center;
+      background-color: #393e46;
     }
 
-    @media (max-width: 600px) {
-      input, button {
-        font-size: 1rem;
-        padding: 10px 16px;
-      }
-
-      pre {
-        font-size: 1rem;
-        padding: 16px;
-      }
+    th {
+      background-color: #00adb5;
     }
   </style>
 </head>
 <body>
-  <!-- Input field -->
   <input type="text" id="userin" placeholder="Enter a number" />
-  <!-- Start button -->
   <button onclick="start()">Start</button>
-  <!-- Output field -->
   <pre id="textelem"></pre>
 
-  <!-- Leaderboard -->
-  <div id="leaderboard">
-    <h2>Leaderboard</h2>
-    <div class="leaderboard-columns">
-      <div>
-        <h3>Most Steps</h3>
-        <pre id="highsteps-list"></pre>
-      </div>
-      <div>
-        <h3>Highest Number</h3>
-        <pre id="highnum-list"></pre>
-      </div>
-    </div>
-  </div>
+  <h2>Leaderboard</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Start Number</th>
+        <th>Max Number</th>
+        <th>Total Steps</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-body"></tbody>
+  </table>
+  <button id="reset-btn" onclick="resetLeaderboard()">Reset Leaderboard</button>
 
   <script>
-    // Convert words like "seventy four" or "one hundred twenty" to numbers
+    // Word to number converter with support for mixed input like "8 million"
     function wordsToNumber(text) {
       if (!text || typeof text !== 'string') return NaN;
 
@@ -124,22 +97,46 @@
         sixty: 60, seventy: 70, eighty: 80, ninety: 90
       };
 
-      text = text.toLowerCase().replace(/-/g, ' ').trim(); // Normalize input
+      const scales = {
+        hundred: 100,
+        thousand: 1000,
+        million: 1000000
+      };
+
+      text = text.toLowerCase().replace(/-/g, ' ').trim();
       const words = text.split(/\s+/);
 
       let current = 0;
       let total = 0;
 
-      for (let word of words) {
-        if (word === "and") continue;
-        else if (ones[word] !== undefined) current += ones[word];
-        else if (teens[word] !== undefined) current += teens[word];
-        else if (tens[word] !== undefined) current += tens[word];
-        else if (word === "hundred") current *= 100;
-        else if (word === "thousand") {
-          current *= 1000;
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const num = parseInt(word);
+
+        if (!isNaN(num)) {
+          let multiplier = 1;
+          const nextWord = words[i + 1];
+
+          if (scales[nextWord]) {
+            multiplier = scales[nextWord];
+            i++; // Skip the next word
+          }
+
+          total += num * multiplier;
+        } else if (ones[word] !== undefined) {
+          current += ones[word];
+        } else if (teens[word] !== undefined) {
+          current += teens[word];
+        } else if (tens[word] !== undefined) {
+          current += tens[word];
+        } else if (word === "hundred") {
+          current *= 100;
+        } else if (scales[word]) {
+          current *= scales[word];
           total += current;
           current = 0;
+        } else if (word === "and") {
+          continue;
         } else {
           return NaN;
         }
@@ -149,20 +146,26 @@
     }
 
     // Leaderboard setup
-    let highestStepsList = JSON.parse(localStorage.getItem('highSteps')) || [];
-    let highestNumberList = JSON.parse(localStorage.getItem('highNumbers')) || [];
+    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
     function saveLeaderboardToStorage() {
-      localStorage.setItem('highSteps', JSON.stringify(highestStepsList));
-      localStorage.setItem('highNumbers', JSON.stringify(highestNumberList));
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
     }
 
     function updateLeaderboardDisplay() {
-      const stepsEl = document.getElementById('highsteps-list');
-      const numbersEl = document.getElementById('highnum-list');
+      const tableBody = document.getElementById('leaderboard-body');
+      tableBody.innerHTML = '';
 
-      stepsEl.textContent = highestStepsList.map((s, i) => `${i + 1}. ${s}`).join('\n');
-      numbersEl.textContent = highestNumberList.map((n, i) => `${i + 1}. ${n}`).join('\n');
+      leaderboard.slice(0, 5).forEach((entry, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${entry.start}</td>
+          <td>${entry.max}</td>
+          <td>${entry.steps}</td>
+        `;
+        tableBody.appendChild(row);
+      });
     }
 
     // Conjecture logic
@@ -170,6 +173,7 @@
       let result = n + '\n';
       let counter = 0;
       let maxInSequence = n;
+      let original = n;
 
       while (n !== 1) {
         if (n % 2 === 0) {
@@ -182,22 +186,25 @@
         if (n > maxInSequence) maxInSequence = n;
       }
 
-      // Update leaderboard
-      highestStepsList.push(counter);
-      highestNumberList.push(maxInSequence);
+      leaderboard.push({ start: original, max: maxInSequence, steps: counter });
 
-      highestStepsList = [...new Set(highestStepsList)].sort((a, b) => b - a).slice(0, 5);
-      highestNumberList = [...new Set(highestNumberList)].sort((a, b) => b - a).slice(0, 5);
+      leaderboard.sort((a, b) => {
+        if (b.steps === a.steps) return b.max - a.max;
+        return b.steps - a.steps;
+      });
+
+      leaderboard = leaderboard.filter((entry, index, self) =>
+        index === self.findIndex(e => e.start === entry.start)
+      ).slice(0, 5);
 
       saveLeaderboardToStorage();
       updateLeaderboardDisplay();
 
-      result += 'conjecture finished!';
-      result += '\nTotal steps: ' + counter;
+      result += 'conjecture finished!\nTotal steps: ' + counter;
       return result;
     }
 
-    // Start function
+    // Start logic
     function start() {
       const rawInput = document.getElementById('userin').value;
       let userinput = parseInt(rawInput);
@@ -215,8 +222,28 @@
       output.textContent = conjecture(userinput);
     }
 
-    // Initialize leaderboard on load
-    updateLeaderboardDisplay();
+    // Reset button with double press
+    let resetPending = false;
+    function resetLeaderboard() {
+      const btn = document.getElementById('reset-btn');
+
+      if (!resetPending) {
+        btn.textContent = "Click again to confirm reset";
+        resetPending = true;
+        setTimeout(() => {
+          btn.textContent = "Reset Leaderboard";
+          resetPending = false;
+        }, 5000);
+      } else {
+        leaderboard = [];
+        saveLeaderboardToStorage();
+        updateLeaderboardDisplay();
+        btn.textContent = "Reset Leaderboard";
+        resetPending = false;
+      }
+    }
+
+    updateLeaderboardDisplay(); // Initialize leaderboard on load
   </script>
 </body>
 </html>
