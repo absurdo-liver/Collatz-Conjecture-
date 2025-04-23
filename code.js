@@ -144,6 +144,14 @@ function start() {
   output.textContent = conjecture(userinput);
 }
 
+function resetLeaderboard() {
+  if (confirm("Are you sure you want to reset the leaderboard?")) {
+    leaderboard = [];
+    saveLeaderboardToStorage();
+    updateLeaderboardDisplay();
+  }
+}
+
 
 // Initialize leaderboard on load
 updateLeaderboardDisplay();
