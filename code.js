@@ -144,11 +144,27 @@ function start() {
   output.textContent = conjecture(userinput);
 }
 
+let resetPending = false;
+
 function resetLeaderboard() {
-  if (confirm("Are you sure you want to reset the leaderboard?")) {
+  const btn = document.getElementById('reset-btn');
+
+  if (!resetPending) {
+    btn.textContent = "Click again to confirm reset";
+    resetPending = true;
+
+    // Reset the button text back after 5 seconds if no confirmation
+    setTimeout(() => {
+      btn.textContent = "Reset Leaderboard";
+      resetPending = false;
+    }, 5000);
+
+  } else {
     leaderboard = [];
     saveLeaderboardToStorage();
     updateLeaderboardDisplay();
+    btn.textContent = "Reset Leaderboard";
+    resetPending = false;
   }
 }
 
