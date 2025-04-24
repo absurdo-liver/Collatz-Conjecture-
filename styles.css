@@ -90,3 +90,19 @@ table#leaderboard th {
   text-align: left;
   white-space: pre-wrap;
 }
+
+pre#textelem2 {
+  font-size: 1.2rem;
+  background-color: #ffffff;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  box-sizing: border-box;
+}
