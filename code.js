@@ -168,7 +168,7 @@ function resetLeaderboard() {
 // Initialize leaderboard on load
 updateLeaderboardDisplay();
 
-function fibunacci() {
+function fibonacci() {
   const rawInput = document.getElementById('userin2').value;
   let n = parseInt(rawInput);
 
