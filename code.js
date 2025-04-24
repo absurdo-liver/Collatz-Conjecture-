@@ -167,3 +167,27 @@ function resetLeaderboard() {
 
 // Initialize leaderboard on load
 updateLeaderboardDisplay();
+
+function fibunacci() {
+  const rawInput = document.getElementById('userin2').value;
+  let n = parseInt(rawInput);
+
+  const output2 = document.getElementById('textelem2');
+
+  if (isNaN(n) || n < 1) {
+    output2.textContent = 'Please enter a valid positive number!';
+    return;
+  }
+
+  let n1 = 0, n2 = 1, nextTerm;
+  let result = '';
+
+  for (let i = 1; i <= n; i++) {
+    result += n1 + (i < n ? ', ' : '');
+    nextTerm = n1 + n2;
+    n1 = n2;
+    n2 = nextTerm;
+  }
+
+  output2.textContent = result;
+}
